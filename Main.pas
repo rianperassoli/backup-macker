@@ -4,7 +4,7 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
-  System.IOUtils,
+  System.IOUtils, Types,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.Imaging.pngimage, FileCtrl, UiTypes;
 
@@ -27,8 +27,8 @@ type
     procedure btnSelectDestinationPathClick(Sender: TObject);
   private
     function ValidationPaths: Boolean;
-    function IsEmptyFolder(APath: string): Boolean;
     function SelectFolder: string;
+    procedure CopyFilesToPath(AFiles: array of string);
   public
     { Public declarations }
   end;
@@ -50,34 +50,39 @@ begin
     edtPathOrigin.SetFocus;
     Exit(False);
   end
-  else if Trim(edtPathDestination.Text) = EmptyStr then
+  else
+  if Trim(edtPathDestination.Text) = EmptyStr then
   begin
     MessageDlg('O diretório de destino é inválido.', mtInformation, [mbOK], 0);
     edtPathDestination.SetFocus;
     Exit(False);
   end
-  else if not System.SysUtils.DirectoryExists(edtPathOrigin.Text) then
+  else
+  if not System.SysUtils.DirectoryExists(edtPathOrigin.Text) then
   begin
     edtPathOrigin.SelectAll;
     MessageDlg('A pasta de origem não existe.', mtInformation, [mbOK], 0);
     edtPathOrigin.SetFocus;
     Exit(False);
   end
-  else if not System.SysUtils.DirectoryExists(edtPathDestination.Text) then
+  else
+  if not System.SysUtils.DirectoryExists(edtPathDestination.Text) then
   begin
     edtPathDestination.SelectAll;
     MessageDlg('A pasta de destino não existe.', mtInformation, [mbOK], 0);
     edtPathDestination.SetFocus;
     Exit(False);
   end
-  else if edtPathOrigin.Text = edtPathDestination.Text then
+  else
+  if (edtPathOrigin.Text = edtPathDestination.Text) then
   begin
     edtPathDestination.SelectAll;
     MessageDlg('Não é possivel selecionar a mesma pasta para origem e destino.', mtInformation, [mbOK], 0);
     edtPathDestination.SetFocus;
     Exit(False);
   end
-  else if IsEmptyFolder(edtPathOrigin.Text) then
+  else
+  if TDirectory.IsEmpty(edtPathOrigin.Text) then
   begin
     edtPathOrigin.SelectAll;
     MessageDlg('A pasta de origem está vazia', mtInformation, [mbOK], 0);
@@ -101,21 +106,19 @@ begin
 end;
 
 procedure TMainForm.btnStartClick(Sender: TObject);
+var
+ oFiles: TStringDynArray;
 begin
   if ValidationPaths then
   begin
-    showmessage('bora');
+    oFiles := TDirectory.GetFiles(edtPathOrigin.Text, '*', TSearchOption.soAllDirectories);
+    CopyFilesToPath(oFiles);
   end;
 end;
 
 procedure TMainForm.FormShow(Sender: TObject);
 begin
   edtPathOrigin.SetFocus;
-end;
-
-function TMainForm.IsEmptyFolder(APath: string): Boolean;
-begin
-  Result := TDirectory.IsEmpty(APath);
 end;
 
 function TMainForm.SelectFolder: string;
@@ -126,6 +129,19 @@ begin
 
   if SelectDirectory('Selecione uma pasta', '', sPath) then
     Result := sPath;
+end;
+
+procedure TMainForm.CopyFilesToPath(AFiles: array of string);
+var
+  InFile, OutFile: string;
+  sPathDestination: string;
+begin
+  for InFile in AFiles do
+  begin
+    sPathDestination := StringReplace(TPath.GetFileName(InFile), edtPathOrigin.Text, edtPathDestination.Text, [rfReplaceAll]);
+    OutFile := TPath.Combine( sPathDestination, TPath.GetFileName(InFile) );
+    TFile.Copy(InFile, OutFile, True);
+  end;
 end;
 
 end.

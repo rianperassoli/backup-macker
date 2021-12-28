@@ -235,7 +235,7 @@ object MainForm: TMainForm
       object lblIgnoreFolders: TLabel
         Left = 7
         Top = 1
-        Width = 169
+        Width = 167
         Height = 13
         Caption = 'Lista de pastas a serem ignoradas:'
       end
