@@ -2,7 +2,7 @@ program backup_maker;
 
 uses
   Vcl.Forms,
-  Main in 'Main.pas' {Form1},
+  Main in 'Main.pas' {MainForm},
   Vcl.Themes,
   Vcl.Styles;
 
@@ -13,6 +13,6 @@ begin
   Application.MainFormOnTaskbar := True;
   Application.Title := 'Backup Maker';
   TStyleManager.TrySetStyle('Metropolis UI Blue');
-  Application.CreateForm(TForm1, Form1);
+  Application.CreateForm(TMainForm, MainForm);
   Application.Run;
 end.
