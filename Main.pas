@@ -4,9 +4,9 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
-  System.IOUtils, Types,
-  System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
-  Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.Imaging.pngimage, FileCtrl, UiTypes;
+  System.IOUtils, Types, System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms,
+  Vcl.Dialogs, Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.Imaging.pngimage, FileCtrl,
+  UiTypes;
 
 type
   TMainForm = class(TForm)
@@ -28,7 +28,7 @@ type
   private
     function ValidationPaths: Boolean;
     function SelectFolder: string;
-    procedure CopyFilesToPath(AFiles: array of string);
+    procedure CopyFilesAndFolders(APathOrigin, APathDestination: string);
   public
     { Public declarations }
   end;
@@ -50,39 +50,34 @@ begin
     edtPathOrigin.SetFocus;
     Exit(False);
   end
-  else
-  if Trim(edtPathDestination.Text) = EmptyStr then
+  else if Trim(edtPathDestination.Text) = EmptyStr then
   begin
     MessageDlg('O diretório de destino é inválido.', mtInformation, [mbOK], 0);
     edtPathDestination.SetFocus;
     Exit(False);
   end
-  else
-  if not System.SysUtils.DirectoryExists(edtPathOrigin.Text) then
+  else if not System.SysUtils.DirectoryExists(edtPathOrigin.Text) then
   begin
     edtPathOrigin.SelectAll;
     MessageDlg('A pasta de origem não existe.', mtInformation, [mbOK], 0);
     edtPathOrigin.SetFocus;
     Exit(False);
   end
-  else
-  if not System.SysUtils.DirectoryExists(edtPathDestination.Text) then
+  else if not System.SysUtils.DirectoryExists(edtPathDestination.Text) then
   begin
     edtPathDestination.SelectAll;
     MessageDlg('A pasta de destino não existe.', mtInformation, [mbOK], 0);
     edtPathDestination.SetFocus;
     Exit(False);
   end
-  else
-  if (edtPathOrigin.Text = edtPathDestination.Text) then
+  else if (edtPathOrigin.Text = edtPathDestination.Text) then
   begin
     edtPathDestination.SelectAll;
     MessageDlg('Não é possivel selecionar a mesma pasta para origem e destino.', mtInformation, [mbOK], 0);
     edtPathDestination.SetFocus;
     Exit(False);
   end
-  else
-  if TDirectory.IsEmpty(edtPathOrigin.Text) then
+  else if TDirectory.IsEmpty(edtPathOrigin.Text) then
   begin
     edtPathOrigin.SelectAll;
     MessageDlg('A pasta de origem está vazia', mtInformation, [mbOK], 0);
@@ -106,13 +101,17 @@ begin
 end;
 
 procedure TMainForm.btnStartClick(Sender: TObject);
-var
- oFiles: TStringDynArray;
 begin
   if ValidationPaths then
   begin
-    oFiles := TDirectory.GetFiles(edtPathOrigin.Text, '*', TSearchOption.soAllDirectories);
-    CopyFilesToPath(oFiles);
+    try
+      CopyFilesAndFolders(edtPathOrigin.Text, edtPathDestination.Text);
+
+      MessageDlg('Sucesso ao copiar dados.', mtInformation, [mbOK], 0);
+    except
+      on E: Exception do
+        MessageDlg('Falha ao copiar dados. Erro: ' + E.Message, mtError, [mbOK], 0);
+    end;
   end;
 end;
 
@@ -123,7 +122,7 @@ end;
 
 function TMainForm.SelectFolder: string;
 var
-  sPath: String;
+  sPath: string;
 begin
   Result := EmptyStr;
 
@@ -131,16 +130,35 @@ begin
     Result := sPath;
 end;
 
-procedure TMainForm.CopyFilesToPath(AFiles: array of string);
+procedure TMainForm.CopyFilesAndFolders(APathOrigin, APathDestination: string);
 var
-  InFile, OutFile: string;
-  sPathDestination: string;
+  oSearchRec: TSearchRec;
+  bFineshed: Boolean;
 begin
-  for InFile in AFiles do
+  APathOrigin := IncludeTrailingPathDelimiter(APathOrigin);
+  APathDestination := IncludeTrailingPathDelimiter(APathDestination);
+
+  bFineshed := FindFirst(APathOrigin + '*.*', faAnyFile, oSearchRec) <> 0;
+
+  while not bFineshed do
   begin
-    sPathDestination := StringReplace(TPath.GetFileName(InFile), edtPathOrigin.Text, edtPathDestination.Text, [rfReplaceAll]);
-    OutFile := TPath.Combine( sPathDestination, TPath.GetFileName(InFile) );
-    TFile.Copy(InFile, OutFile, True);
+    if (oSearchRec.Attr and faDirectory) = faDirectory then
+    begin
+      if (oSearchRec.Name <> '.') and (oSearchRec.Name <> '..') then
+      begin
+        System.SysUtils.ForceDirectories(APathDestination + oSearchRec.Name);
+        CopyFilesAndFolders(APathOrigin + oSearchRec.Name, APathDestination + oSearchRec.Name);
+      end;
+    end
+    else
+    begin
+      if not CopyFile(PChar(APathOrigin + oSearchRec.Name), PChar(APathDestination + oSearchRec.Name), False) then
+      begin
+        ShowMessage('Erro ao copiar: ' + APathOrigin + ' para: ' + APathDestination);
+      end;
+    end;
+
+    bFineshed := FindNext(oSearchRec) <> 0;
   end;
 end;
 
