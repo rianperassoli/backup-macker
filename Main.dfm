@@ -24,10 +24,6 @@ object MainForm: TMainForm
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitLeft = 152
-    ExplicitTop = 32
-    ExplicitWidth = 185
-    ExplicitHeight = 41
     object btnStart: TButton
       AlignWithMargins = True
       Left = 5
@@ -49,7 +45,6 @@ object MainForm: TMainForm
       ParentFont = False
       TabOrder = 0
       OnClick = btnStartClick
-      ExplicitLeft = 2
     end
     object pnlFields: TPanel
       Left = 0
@@ -59,9 +54,6 @@ object MainForm: TMainForm
       Align = alTop
       BevelOuter = bvNone
       TabOrder = 1
-      ExplicitLeft = 1
-      ExplicitTop = 1
-      ExplicitWidth = 633
       object btnSelectOriginPath: TImage
         Left = 591
         Top = 16
@@ -228,10 +220,6 @@ object MainForm: TMainForm
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 2
-      ExplicitLeft = 6
-      ExplicitTop = 110
-      ExplicitWidth = 623
-      ExplicitHeight = 195
       object lblIgnoreFolders: TLabel
         Left = 7
         Top = 1
@@ -264,9 +252,6 @@ object MainForm: TMainForm
         Align = alClient
         ScrollBars = ssBoth
         TabOrder = 0
-        ExplicitTop = 19
-        ExplicitWidth = 625
-        ExplicitHeight = 197
       end
     end
   end

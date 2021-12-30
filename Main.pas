@@ -27,6 +27,7 @@ type
     procedure btnSelectDestinationPathClick(Sender: TObject);
   private
     function ValidationPaths: Boolean;
+    function FolderIgnored(const AFolderPath: String): Boolean;
     function SelectFolder: string;
     procedure CopyFilesAndFolders(APathOrigin, APathDestination: string);
   public
@@ -115,6 +116,11 @@ begin
   end;
 end;
 
+function TMainForm.FolderIgnored(const AFolderPath: String): Boolean;
+begin
+  Result := memIgnoreFolders.Lines.IndexOf(AFolderPath) >= 0;
+end;
+
 procedure TMainForm.FormShow(Sender: TObject);
 begin
   edtPathOrigin.SetFocus;
@@ -146,8 +152,11 @@ begin
     begin
       if (oSearchRec.Name <> '.') and (oSearchRec.Name <> '..') then
       begin
-        System.SysUtils.ForceDirectories(APathDestination + oSearchRec.Name);
-        CopyFilesAndFolders(APathOrigin + oSearchRec.Name, APathDestination + oSearchRec.Name);
+        if not FolderIgnored(APathOrigin + oSearchRec.Name) then
+        begin
+          System.SysUtils.ForceDirectories(APathDestination + oSearchRec.Name);
+          CopyFilesAndFolders(APathOrigin + oSearchRec.Name, APathDestination + oSearchRec.Name);
+        end;
       end;
     end
     else
