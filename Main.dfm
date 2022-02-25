@@ -255,4 +255,17 @@ object MainForm: TMainForm
       end
     end
   end
+  object OpenDialog1: TOpenDialog
+    Left = 440
+    Top = 96
+  end
+  object FileOpenDialog1: TFileOpenDialog
+    FavoriteLinks = <>
+    FileTypes = <>
+    OkButtonLabel = 'Selecionar...'
+    Options = [fdoPickFolders, fdoForceFileSystem, fdoFileMustExist]
+    Title = 'Selecione uma pasta...'
+    Left = 397
+    Top = 205
+  end
 end

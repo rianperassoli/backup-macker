@@ -21,6 +21,8 @@ type
     lblIgnoreFolders: TLabel;
     memIgnoreFolders: TMemo;
     lblHelp: TLabel;
+    OpenDialog1: TOpenDialog;
+    FileOpenDialog1: TFileOpenDialog;
     procedure FormShow(Sender: TObject);
     procedure btnStartClick(Sender: TObject);
     procedure btnSelectOriginPathClick(Sender: TObject);
@@ -132,8 +134,10 @@ var
 begin
   Result := EmptyStr;
 
-  if SelectDirectory('Selecione uma pasta', '', sPath) then
-    Result := sPath;
+  SelectDirectory('Select a directory', '', '', []);
+
+  if FileOpenDialog1.Execute then
+    Result := FileOpenDialog1.FileName;
 end;
 
 procedure TMainForm.CopyFilesAndFolders(APathOrigin, APathDestination: string);
